@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agricultural Decision Support System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #002fff 0%, #ff0101 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgb(221, 221, 236);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .card h2 {
+            color: #333;
+            font-size: 20px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #8292da;
+            padding-bottom: 10px;
+        }
+
+        .dataset-controls {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0b36f6 0%, #fc0b0b 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .select-wrapper {
+            margin: 15px 0;
+        }
+
+        .select-wrapper label {
+            display: block;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .data-table {
+            overflow-x: auto;
+            margin-top: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .result-card {
+            grid-column: 1 / -1;
+        }
+
+        .prediction-result {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .prediction-result.show {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-banner {
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-banner.rain {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .result-banner.no-rain {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .result-icon {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .result-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 5px;
+        }
+
+        .confidence {
+            font-size: 14px;
+            color: rgba(255,255,255,0.95);
+        }
+
+        .weather-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .weather-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .weather-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .weather-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .advisory-section {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .advisory-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .advisory-text {
+            color: #856404;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .weather-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+    <link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1> Agricultural Decision Support System</h1>
+            <p>ML-Based Weather Prediction from Historical Dataset</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Dataset Selection Card -->
+            <div class="card">
+                <h2>Historical Weather Dataset</h2>
+                
+                <div class="dataset-controls">
+                    <button class="btn btn-primary" onclick="loadDataset()">Load Dataset (200 Records)</button>
+                    <button class="btn btn-secondary" onclick="showRandomRecord()">Random Record</button>
+                </div>
+
+                <div class="select-wrapper">
+                    <label for="recordSelect">Select a Date/Record:</label>
+                    <select id="recordSelect" onchange="selectRecord()">
+                        <option value="">-- Load dataset first --</option>
+                    </select>
+                </div>
+
+                <div id="datasetStats" class="stats" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-label">Total Records</div>
+                        <div class="stat-value" id="totalRecords">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Rain Days</div>
+                        <div class="stat-value" id="rainDays">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Clear Days</div>
+                        <div class="stat-value" id="clearDays">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected Record Card -->
+            <div class="card">
+                <h2>Selected Weather Data</h2>
+                
+                <div class="weather-grid">
+                    <div class="weather-item">
+                        <div class="weather-label">Temperature</div>
+                        <div class="weather-value" id="dispTemp">--</div>
+                    </div>
+                    <div class="weather-item">
+                        <div class="weather-label">Humidity</div>
+                        <div class="weather-value" id="dispHumidity">--</div>
+                    </div>
+                    <div class="weather-item">
+                        <div class="weather-label">Wind Speed</div>
+                        <div class="weather-value" id="dispWind">--</div>
+                    </div>
+                    <div class="weather-item">
+                        <div class="weather-label">Pressure</div>
+                        <div class="weather-value" id="dispPressure">--</div>
+                    </div>
+                </div>
+                <h3>Select Region (Map)</h3>
+<div id="map" style="height: 300px; border-radius: 10px;"></div>
+<p><b>Selected Region:</b> <span id="selectedRegionText">None</span></p>
+
+
+                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="predictWeather()">
+                    Run ML Prediction
+                </button>
+
+                <div id="sampleData" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; display: none;">
+                    <strong>Quick Test Records:</strong>
+                    <div style="margin-top: 10px; font-size: 13px; color: #666;">
+                        <div>Record #5: Likely Rain (High humidity, Low pressure)</div>
+                        <div>Record #15: Clear Weather (Low humidity)</div>
+                        <div>Record #50: Moderate Conditions</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prediction Result Card -->
+            <div class="card result-card">
+                <h2>Prediction & Advisory</h2>
+                
+                <div id="predictionResult" class="prediction-result">
+                    <div id="resultBanner" class="result-banner">
+                        <div class="result-icon" id="resultIcon"></div>
+                        <div class="result-title" id="resultTitle"></div>
+                        <div class="confidence" id="confidence"></div>
+                    </div>
+
+                    <div class="advisory-section">
+                        <div class="advisory-title">Agricultural Advisory</div>
+                        <div class="advisory-text" id="advisoryText"></div>
+                    </div>
+                </div>
+
+                <div id="noSelection" style="text-align: center; padding: 40px; color: #999;">
+                    <div style="font-size: 50px; margin-bottom: 10px;"></div>
+                    <p>Load dataset and select a record to see prediction</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dataset Preview Table -->
+        <div class="card">
+            <h2>Dataset Preview (First 10 Records)</h2>
+            <div class="data-table">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Record</th>
+                            <th>Temp (°C)</th>
+                            <th>Humidity (%)</th>
+                            <th>Wind (km/h)</th>
+                            <th>Pressure (hPa)</th>
+                            <th>Actual Rain</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr><td colspan="6" style="text-align: center; padding: 30px; color: #999;">Load dataset to view records</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let weatherDataset = [];
+        let selectedRecord = null;
+
+        // Generate synthetic dataset (same logic as Python code)
+        function generateDataset() {
+            const data = [];
+            
+            for (let i = 0; i < 200; i++) {
+                const temp = 15 + Math.random() * 20;
+                const humidity = 30 + Math.random() * 65;
+                const windSpeed = Math.random() * 20;
+                const pressure = 990 + Math.random() * 30;
+                
+                // Rule: High humidity + low pressure = rain
+                let rain = 0;
+                if (humidity > 70 && pressure < 1005) {
+                    rain = 1;
+                } else if (humidity > 80) {
+                    rain = 1;
+                }
+                
+                data.push({
+                    id: i + 1,
+                    temperature: parseFloat(temp.toFixed(1)),
+                    humidity: parseFloat(humidity.toFixed(1)),
+                    windSpeed: parseFloat(windSpeed.toFixed(1)),
+                    pressure: parseFloat(pressure.toFixed(1)),
+                    actualRain: rain
+                });
+            }
+            
+            return data;
+        }
+
+        // ML Prediction function (Random Forest simulation)
+       
+
+        function loadDataset() {
+            weatherDataset = generateDataset();
+            
+            // Update stats
+            const rainCount = weatherDataset.filter(r => r.actualRain === 1).length;
+            document.getElementById('totalRecords').textContent = weatherDataset.length;
+            document.getElementById('rainDays').textContent = rainCount;
+            document.getElementById('clearDays').textContent = weatherDataset.length - rainCount;
+            document.getElementById('datasetStats').style.display = 'flex';
+            
+            // Populate dropdown
+            const select = document.getElementById('recordSelect');
+            select.innerHTML = '<option value="">-- Select a record --</option>';
+            weatherDataset.forEach(record => {
+                const option = document.createElement('option');
+                option.value = record.id;
+                option.textContent = `Day ${record.id} | Temp: ${record.temperature}°C | Humidity: ${record.humidity}%`;
+                select.appendChild(option);
+            });
+            
+            // Show first 10 in table
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            weatherDataset.slice(0, 10).forEach(record => {
+                const row = `
+                    <tr>
+                        <td>Day ${record.id}</td>
+                        <td>${record.temperature}</td>
+                        <td>${record.humidity}</td>
+                        <td>${record.windSpeed}</td>
+                        <td>${record.pressure}</td>
+                        <td>${record.actualRain ? ' Yes' : ' No'}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+            
+            document.getElementById('sampleData').style.display = 'block';
+            alert('✅ Dataset loaded! 200 historical weather records ready.');
+        }
+
+        function showRandomRecord() {
+            if (weatherDataset.length === 0) {
+                alert('Please load dataset first!');
+                return;
+            }
+            const randomIndex = Math.floor(Math.random() * weatherDataset.length);
+            document.getElementById('recordSelect').value = weatherDataset[randomIndex].id;
+            selectRecord();
+        }
+
+        function selectRecord() {
+            const recordId = parseInt(document.getElementById('recordSelect').value);
+            if (!recordId) return;
+            
+            selectedRecord = weatherDataset.find(r => r.id === recordId);
+            
+            document.getElementById('dispTemp').textContent = selectedRecord.temperature + '°C';
+            document.getElementById('dispHumidity').textContent = selectedRecord.humidity + '%';
+            document.getElementById('dispWind').textContent = selectedRecord.windSpeed + ' km/h';
+            document.getElementById('dispPressure').textContent = selectedRecord.pressure + ' hPa';
+            
+            document.getElementById('predictionResult').classList.remove('show');
+            document.getElementById('noSelection').style.display = 'block';
+        }
+
+        async function predictWeather() {
+            if (!selectedRegion) {
+  alert("Please select a region from the map");
+  return;
+}
+
+    if (!selectedRecord) {
+        alert("Please select a record first!");
+        return;
+    }
+    console.log("Selected Region:", selectedRegion);
+
+
+    const response = await fetch("http://127.0.0.1:5000/predict", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+  region: selectedRegion,
+  temperature: selectedRecord.temperature,
+  humidity: selectedRecord.humidity,
+  windSpeed: selectedRecord.windSpeed,
+  pressure: selectedRecord.pressure
+  
+})
+
+    });
+
+    const prediction = await response.json();
+
+    let advisory;
+    if (prediction.willRain === 1) {
+        advisory = "🌧️ IRRIGATION NOT REQUIRED. Rain expected.";
+    } else {
+        advisory = "💧 IRRIGATION REQUIRED. No rain expected.";
+    }
+
+    document.getElementById("noSelection").style.display = "none";
+
+    const banner = document.getElementById("resultBanner");
+    banner.className = "result-banner " + (prediction.willRain ? "rain" : "no-rain");
+
+    document.getElementById("resultIcon").textContent = prediction.willRain ? "🌧️" : "☀️";
+    document.getElementById("resultTitle").textContent =
+        prediction.willRain ? "Rain Expected Tomorrow" : "Clear Weather Expected";
+
+    document.getElementById("confidence").textContent =
+        `ML Model Confidence: ${prediction.confidence}%`;
+
+    document.getElementById("advisoryText").textContent = advisory;
+
+    document.getElementById("predictionResult").classList.add("show");
+}
+let selectedRegion = null;
+
+const map = L.map("map").setView([11.0, 78.0], 6); // Tamil Nadu view
+
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  attribution: "© OpenStreetMap"
+}).addTo(map);
+const regions = [
+  { name: "Chennai", lat: 13.0827, lon: 80.2707 },
+  { name: "Madurai", lat: 9.9252, lon: 78.1198 },
+  { name: "Coimbatore", lat: 11.0168, lon: 76.9558 }
+];
+
+regions.forEach(region => {
+  const marker = L.marker([region.lat, region.lon]).addTo(map);
+
+  marker.on("click", () => {
+    selectedRegion = region.name;
+    document.getElementById("selectedRegionText").innerText = selectedRegion;
+    alert("Region selected: " + selectedRegion);
+  });
+});
+
+
+
+            
+           
+        
+    </script>
+</body>
+</html>
