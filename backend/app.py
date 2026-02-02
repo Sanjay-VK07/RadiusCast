@@ -2,6 +2,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pickle
 import numpy as np
+from flask import Flask, jsonify, request, send_from_directory
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -40,6 +42,12 @@ def predict():
         "willRain": int(prediction),
         "confidence": round(confidence, 2)
     })
+    
+    
+@app.route("/")
+def home():
+    return send_from_directory("../frontend", "index.html")
+
 
 if __name__ == "__main__":
     app.run(debug=True)
