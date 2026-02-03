@@ -4,6 +4,8 @@ import pickle
 import numpy as np
 from flask import Flask, jsonify, request, send_from_directory
 import os
+from utils.data_manager import prepare_features
+from utils.geo_utils import within_5km
 
 app = Flask(__name__)
 CORS(app)
